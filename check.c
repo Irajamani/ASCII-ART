@@ -1,6 +1,35 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+#include <ctype.h>
+#include <math.h>
 #include <MagickWand/MagickWand.h>
+
+
+
+
+int find_avg(char * str) {
+  int ret = 0;
+  char p[4];
+  int i = 0;
+  while(str[0] != ')'){
+    if(str[0] == ','){
+      p[i] = '\0';
+      ret += atoi(p);
+      i = 0;
+      str++;
+    } else {
+      if (isdigit(str[0])){
+        p[i] = str[0];
+        i++;
+      }
+      str++;
+    }
+  }
+  p[i] = '\0';
+  ret += atoi(p);
+  return ret / 3;
+}
 
 int main(int argc,char **argv)
 {
@@ -17,6 +46,8 @@ int main(int argc,char **argv)
   description=(char *) MagickRelinquishMemory(description); \
   exit(-1); \
 }
+
+char *to_print = "`^\",:;Il!i~+_-?][}{1)(|\\/tfjrxnuvczXYUJCLQ0OZmwqpdbkhao*#MW&8%B@$";
 
   MagickBooleanType
     status;
@@ -43,13 +74,24 @@ int main(int argc,char **argv)
   PixelIterator *iterator = NewPixelIterator(magick_wand);
   PixelWand **pixels = NULL;
   int x;
-  for(int i = 0;i<height;i++) {
-      pixels = PixelGetNextIteratorRow(iterator, &x);
-      for(x=0;x<width;x++){
-          pixel[i][x] =  pixels[x];
+  int i;
+  size_t j;
+  // storing average directly
+  for(i = 0;i < height;i++) {
+  pixels = PixelGetNextIteratorRow(iterator, &j);
+  for(x=0;x<width;x++){
+          char* to_parse = PixelGetColorAsString(pixels[x]);
+          pixel[i][x] = find_avg(to_parse);
       }
   }
-  printf("First ele of pixel is: %d", pixel[0][0]);
-  printf("Height and width are: %ld, %ld\n", height, width);
+  double l = (255.0 / strlen(to_print));
+  // Printing out stuff
+  for(i = 0;i<height;i++) {
+    for(x=0;x<width;x++) {
+      int k = pixel[i][x] / l;
+      printf("%c", to_print[k]);
+    }
+    // printf("\n");
+  }
   return(0);
 }
